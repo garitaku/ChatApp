@@ -251,7 +251,4 @@ public class SimpleChatClient {
 //		scc.connect();
 	}
 }
-
-
-
-//最後の行にコメント追加
+//git管理のてすと
