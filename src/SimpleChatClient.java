@@ -1,27 +1,11 @@
 
-
 import java.awt.Container;
 import java.awt.FlowLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.awt.event.*;
+import java.io.*;
 import java.net.Socket;
-
-import javax.swing.BoxLayout;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.JFileChooser;
+import javax.swing.*;
 
 class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, WindowListener {
 	String nickname = "ななしのごんべえ";
@@ -33,8 +17,6 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 	JTextField ipInput = new JTextField(10);
 	JTextField portInput = new JTextField(4);
 	Socket cs;
-//	JButton sendButton = new JButton("送信");
-
 	JButton sendMessage = new JButton("送信");
 	JButton conectServer = new JButton("接続");
 	JButton nameChange = new JButton("名前変更");
@@ -46,6 +28,10 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 	JScrollPane sp = new JScrollPane(textArea);
 	String serverAddr;
 	String serverPort;
+	JMenuBar menuBar;
+	JMenu menu;
+	JMenuItem open;
+	JFileChooser chooser;
 
 	SimpleChatClientFrame() {
 		this.addWindowListener(this);
@@ -68,6 +54,14 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 		sendMessage.addActionListener(this);
 		nameChange.addActionListener(this);
 		conectServer.addActionListener(this);
+		menuBar = new JMenuBar();
+		menu = new JMenu("ファイル");
+		open = new JMenuItem("開く");
+		chooser = new JFileChooser();
+		setJMenuBar(menuBar);
+		menuBar.add(menu);
+		menu.add(open);
+		open.addActionListener(this);
 		setBounds(600, 300, 500, 300);
 		setVisible(true);
 		textArea.setEditable(false);
@@ -86,8 +80,6 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 
 	public void connect() {
 		try {
-//			cs = new Socket("192.168.0.154", 5000);// 富永さんのIPアドレス
-//			cs = new Socket("127.0.0.1", 5000);
 			cs = new Socket(serverAddr, Integer.parseInt(serverPort));
 			System.out.println("接続しました");
 //				BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(cs.getOutputStream()));
@@ -105,6 +97,28 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == open) {
+			int okCancel = chooser.showOpenDialog(this);
+			if (okCancel == 0) {
+				File file = chooser.getSelectedFile();
+				try {
+					BufferedReader in = new BufferedReader(new FileReader(file));
+					serverAddr = in.readLine();
+					serverPort = in.readLine();
+					in.close();
+					connect();// うまくいかない・・・
+					System.out.println("接続しました");
+					conectServer.setText("接続解除");
+				} catch (FileNotFoundException e1) {
+					// TODO 自動生成された catch ブロック
+					e1.printStackTrace();
+				} catch (IOException e1) {
+					// TODO 自動生成された catch ブロック
+					e1.printStackTrace();
+				}
+			}
+
+		}
 		if (e.getSource() == sendMessage || e.getSource() == input) {
 			if (cs != null && cs.isConnected()) {
 				String text = input.getText();
@@ -178,7 +192,6 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 				}
 			}
 		}
-
 	}
 
 	@Override
