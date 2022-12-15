@@ -1,122 +1,48 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Container;
+import java.awt.FlowLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Vector;
 
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JTextField;
 
-public class SimpleChatServer extends JFrame implements ActionListener {
-
-	JTextField portInput;
-	JButton connectButton;
-//	JToggleButton connectButton2;
-	JLabel portLb;
-	int portNum;
-
+public class SimpleChatServer {
 	public static void main(String[] args) {
-		new SimpleChatServer();
-//
-//		try {
-//			System.out.println(Inet4Address.getLocalHost().getHostAddress());
-//			System.err.println("サーバー起動ちう");
-//			ServerSocket ss = new ServerSocket(portNum);
-//
-//			PrintWriter addrPort = new PrintWriter(new BufferedWriter(new FileWriter(new File("C:/java/server.txt"))));
-//			addrPort.write(Inet4Address.getLocalHost().getHostAddress());
-//			addrPort.close();
-//
-//			Socket cs = null;
-//			while (true) {
-//				cs = ss.accept();
-//				ChatThread chat = new ChatThread(cs);
-//				chat.start();
-//				System.out.println("新しいスレッドが建てられました");
-//			}
-//		} catch (Exception e) {
-//			// TODO 自動生成された catch ブロック
-//			e.printStackTrace();
-//		}
+		Thread frame = new Thread(new SimpleChatServerFrame());
+		frame.start();
 	}
 
-	SimpleChatServer() {
-		portInput = new JTextField(4);
-		connectButton = new JButton("サーバー起動");
-		portLb = new JLabel("ポート番号");
-//		connectButton2=new JToggleButton("接続");
-		Container container = this.getContentPane();
-		container.setLayout(new FlowLayout());
-		container.add(portLb);
-		container.add(portInput);
-		container.add(connectButton);
-//		container.add(connectButton2);
-//		connectButton2.addActionListener(this);
-//		connectButton2.setActionCommand("connectButton2");
-		connectButton.addActionListener(this);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(200, 200, 300, 80);
-		setVisible(true);
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent ae) {
-		// TODO 自動生成されたメソッド・スタブ
-//		String actionCommand = ae.getActionCommand();
-//		if(actionCommand.equals("connectButton2")) {
-//			System.out.println(connectButton2.isSelected());
-//			portNum = Integer.parseInt(portInput.getText());
-//			portInput.setEditable(false);
-//			try {
-//				System.out.println(Inet4Address.getLocalHost().getHostAddress());
-//				System.out.println(portNum);
-//				PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(new File("C://java/port.txt"))));
-//				out.write(Inet4Address.getLocalHost().getHostAddress() + "\r\n" + portNum);
-//				out.close();
-//				System.err.println("サーバー起動ちう");
-//				ServerSocket ss = new ServerSocket(portNum);
-//				Socket cs = null;
-//				while (connectButton2.isSelected()) {
-//					cs = ss.accept();
-//					ChatThread chat = new ChatThread(cs);
-//					chat.start();
-//					System.out.println("新しいスレッドが建てられました");
-//				}
-//			} catch (Exception e) {
-//				// TODO 自動生成された catch ブロック
-//				e.printStackTrace();
-//			}
-//		}
-		if (ae.getSource() == connectButton) {
-			portNum = Integer.parseInt(portInput.getText());
-			portInput.setEditable(false);
-			try {
-
-				System.out.println(Inet4Address.getLocalHost().getHostAddress());
-				System.out.println(portNum);
-
-				PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(new File("C://java/port.txt"))));
-				out.write(Inet4Address.getLocalHost().getHostAddress() + "\r\n" + portNum);
-				out.close();
-
-				System.err.println("サーバー起動ちう");
-				ServerSocket ss = new ServerSocket(portNum);
-				
-				Thread stop = new Thread(new ServerStop());
-				stop.start();
-
-				Socket cs = null;
-				while (true) {
-					cs = ss.accept();
-					ChatThread chat = new ChatThread(cs);
-					chat.start();
-					System.out.println("新しいスレッドが建てられました");
-				}
-			} catch (Exception e) {
-				// TODO 自動生成された catch ブロック
-				e.printStackTrace();
-			}
+	static void connect() {
+		SimpleChatServerFrame.portNum = Integer.parseInt(SimpleChatServerFrame.portInput.getText());
+		SimpleChatServerFrame.portInput.setEditable(false);
+		try {
+			System.out.println(Inet4Address.getLocalHost().getHostAddress());
+			System.out.println(SimpleChatServerFrame.portNum);
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(new File("C://java/port.txt"))));
+			out.write(Inet4Address.getLocalHost().getHostAddress() + "\r\n" + SimpleChatServerFrame.portNum);
+			out.close();
+			System.err.println("サーバー起動ちう");
+			
+			Loop t = new Loop();
+			t.start();
+			
+		} catch (Exception e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
 		}
 	}
 }
@@ -140,8 +66,6 @@ class ChatThread extends Thread {
 			System.err.println("接続しました");
 			BufferedReader in = new BufferedReader(new InputStreamReader(cs.getInputStream()));
 			PrintWriter out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(cs.getOutputStream())));
-//			out.println(in.readLine());
-//			out.flush();
 			while (true) {
 				try {
 					System.out.println("クライアントからの入力を待ち受けています");
@@ -192,39 +116,52 @@ class ChatThread extends Thread {
 	}
 }
 
-class ServerStop extends JFrame implements ActionListener, Runnable {
+class SimpleChatServerFrame extends JFrame implements Runnable, ActionListener {
+	static JTextField portInput;
+	static JButton connectButton;
+	JLabel portLb;
+	static int portNum;
 
-	ServerStop() {
-//		portInput = new JTextField(4);
-//		connectButton = new JButton("サーバー起動");
-//		portLb = new JLabel("ポート番号");
-////		connectButton2=new JToggleButton("接続");
-//		Container container = this.getContentPane();
-//		container.setLayout(new FlowLayout());
-//		container.add(portLb);
-//		container.add(portInput);
-//		container.add(connectButton);
-////		container.add(connectButton2);
-////		connectButton2.addActionListener(this);
-////		connectButton2.setActionCommand("connectButton2");
-//		connectButton.addActionListener(this);
-//		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-//		setBounds(200, 200, 300, 80);
-//		setVisible(true);
-	}
-
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		// TODO 自動生成されたメソッド・スタブ
-
-	}
-
-	@Override
 	public void run() {
-		// TODO 自動生成されたメソッド・スタブ
+
+	}
+
+	SimpleChatServerFrame() {
+		portInput = new JTextField(4);
+		connectButton = new JButton("サーバー起動");
+		portLb = new JLabel("ポート番号");
+		Container container = this.getContentPane();
+		container.setLayout(new FlowLayout());
+		container.add(portLb);
+		container.add(portInput);
+		container.add(connectButton);
+		connectButton.addActionListener(this);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(200, 200, 300, 80);
 		setVisible(true);
 	}
 
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == connectButton) {
+			SimpleChatServer.connect();
+		}
+	}
+}
+
+class Loop extends Thread {
+	public void run() {
+		try {
+			ServerSocket ss = new ServerSocket(SimpleChatServerFrame.portNum);
+			Socket cs = null;
+			while (true) {
+				cs = ss.accept();
+				ChatThread chat = new ChatThread(cs);
+				chat.start();
+				System.out.println("新しいスレッドが建てられました");
+			}
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+
+	}
 }
