@@ -146,9 +146,16 @@ class ChatThread extends Thread {
 			// e.printStackTrace();
 		}
 	}
-	
+
 	public static void stopServer() {
 		talk("サーバーが停止しました");
+		try {
+			Loop.ss.close();
+			Loop.cs.close();
+		} catch (IOException e) {
+			// TODO 自動生成された catch ブロック
+			e.printStackTrace();
+		}
 	}
 }
 

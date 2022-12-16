@@ -1,6 +1,7 @@
 
 import java.awt.Container;
 import java.awt.FlowLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -84,8 +85,10 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 		menu.add(open);
 		open.addActionListener(this);
 		setBounds(600, 300, 500, 300);
-		setVisible(true);
 		textArea.setEditable(false);
+		textArea.setMargin(new Insets(5, 5, 5, 5));
+		setVisible(true);
+
 //		panel2.setVisible(false);
 //		conectServer.setEnabled(false);
 
@@ -179,9 +182,9 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 			} else if (conectServer.getText() == "接続") {
 				System.out.println("接続が押されました");
 				serverAddr = ipInput.getText();
-				serverPort = portInput.getText();// portInputのget.text()に代わるものが何か・・・？
+				serverPort = portInput.getText();
 				System.out.println("IPアドレス：" + serverAddr + "の" + serverPort + "番ポートに繋ぎます。");
-				connect();// うまくいかない・・・
+				connect();
 				System.out.println("接続しました");
 				conectServer.setText("接続解除");
 			}
@@ -193,6 +196,23 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 		// TODO 自動生成されたメソッド・スタブ
 		while (true) {
 			if (cs == null || !cs.isConnected()) {
+				try {
+					if (cs != null) {
+						cs.close();
+						cs = null;
+					}
+					if (in != null) {
+						in.close();
+					}
+					if (out != null) {
+						out.close();
+					}
+				} catch (Exception e) {
+
+				}
+				System.out.println("接続解除しました");
+				conectServer.setText("接続");
+				panel2.setVisible(true);
 				System.out.println("繋がっていない");
 				try {
 					Thread.sleep(4000);
@@ -205,8 +225,11 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 				String message;
 				try {
 					message = in.readLine();
-					System.out.println("サーバーから" + message + "を受け取りました");
-					textArea.append(message + "\r\n");
+					if (message != null) {
+						System.out.println("サーバーから" + message + "を受け取りました");
+						textArea.append(message + "\r\n");
+					}
+
 				} catch (IOException e) {
 //					e.printStackTrace();
 				}
@@ -220,6 +243,7 @@ class SimpleChatClientFrame extends JFrame implements ActionListener, Runnable, 
 		textArea.append("ニックネームを入力してから「名前変更」を押してね" + "\r\n");
 		textArea.append("最初の名前は「ななしのごんべえ」になっているよ" + "\r\n");
 		textArea.append("接続したいサーバーのIPアドレスとポートを入力してね" + "\r\n");
+		textArea.append("port.txtを読み込むことでも接続できるよ" + "\r\n");
 	}
 
 	@Override
